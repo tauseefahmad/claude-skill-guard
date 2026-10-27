@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude Skill Guard: security scanner for Claude Code skills</title>
+<meta name="description" content="Check Claude Code skills and plugins for malware before installing. Free open-source scanner for prompt injection, key theft, data exfiltration and bad hooks.">
+<link rel="canonical" href="https://tauseefahmad.github.io/claude-skill-guard/">
+<meta name="robots" content="index, follow">
+<meta name="author" content="Tauseef Ahmad Awan">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Claude Skill Guard: is that Claude Code skill safe?">
+<meta property="og:description" content="Scan Claude Code skills and plugins for prompt injection, key theft, data exfiltration and malicious hooks before they run. Zero dependencies, read-only, MIT.">
+<meta property="og:url" content="https://tauseefahmad.github.io/claude-skill-guard/">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#0f172a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2 4 7v8c0 7.5 5.1 13.7 12 15 6.9-1.3 12-7.5 12-15V7z' fill='%2322c55e'/%3E%3Cpath d='m11 16 4 4 7-8' stroke='%23fff' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Claude Skill Guard",
+  "alternateName": "skill-guard",
+  "applicationCategory": "SecurityApplication",
+  "operatingSystem": "Windows, macOS, Linux",
+  "description": "Security scanner for Claude Code skills and plugins. Detects prompt injection, hidden Unicode instructions, credential theft, data exfiltration, remote code execution and malicious hooks, and blocks dangerous skills before install.",
+  "url": "https://tauseefahmad.github.io/claude-skill-guard/",
+  "downloadUrl": "https://github.com/tauseefahmad/claude-skill-guard",
+  "codeRepository": "https://github.com/tauseefahmad/claude-skill-guard",
+  "license": "https://opensource.org/licenses/MIT",
+  "isAccessibleForFree": true,
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Person", "name": "Tauseef Ahmad Awan", "url": "https://tauseefahmad.github.io/" }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "Are Claude Code skills safe?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Most are, but a skill runs with your permissions and its instructions are followed by the agent, so a malicious one can read your files and keys, send them anywhere or change your settings. Check a skill before installing it, like any other code." } },
+    { "@type": "Question", "name": "How do I check a Claude skill for malware?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Install Claude Skill Guard and ask 'Is this skill safe?' with the link before installing. It clones the skill into a scratch folder with git hooks disabled, scans it and reviews every file. You can also run scan.mjs on any skill folder." } },
+    { "@type": "Question", "name": "Does it work with Claude Code plugins and MCP servers?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. Plugins are scanned like skills, and every hook command and MCP server they declare is listed, because those run without you invoking anything." } },
+    { "@type": "Question", "name": "Does the scanner send my code anywhere?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. It is local and read-only, makes no network requests and has no dependencies." } }
+  ]
+}
+</script>
+<style>
+  :root { --bg:#0f172a; --panel:#111c33; --ink:#e2e8f0; --muted:#94a3b8; --line:#1e2b48; --green:#22c55e; --yellow:#facc15; --red:#f87171; --cyan:#38bdf8; --link:#7dd3fc; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  a { color:var(--link); }
+  .wrap { max-width:980px; margin:0 auto; padding:0 20px; }
+  header { padding:72px 0 40px; text-align:center; }
+  .badge { display:inline-block; font-size:13px; letter-spacing:.04em; color:var(--green); border:1px solid #1f5135; background:#0d2a1c; padding:4px 12px; border-radius:999px; }
+  h1 { font-size:clamp(2rem,5vw,3.2rem); line-height:1.15; margin:18px 0 14px; }
+  h1 span { color:var(--green); }
+  .lead { font-size:1.2rem; color:var(--muted); max-width:720px; margin:0 auto 28px; }
+  .cta { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+  .btn { padding:12px 22px; border-radius:10px; font-weight:600; text-decoration:none; }
+  .btn.primary { background:var(--green); color:#04210f; }
+  .btn.ghost { border:1px solid var(--line); color:var(--ink); }
+  .btn:focus-visible { outline:3px solid var(--yellow); outline-offset:3px; }
+  section { padding:40px 0; border-top:1px solid var(--line); }
+  h2 { font-size:1.6rem; margin:0 0 18px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:18px; }
+  .card h3 { margin:0 0 6px; font-size:1.05rem; }
+  .card p { margin:0; color:var(--muted); font-size:.95rem; }
+  pre { background:#0b1222; border:1px solid var(--line); border-radius:12px; padding:18px; overflow-x:auto; font:13.5px/1.55 ui-monospace,"Cascadia Code",Consolas,monospace; }
+  .g { color:var(--green); } .y { color:var(--yellow); } .r { color:var(--red); } .c { color:var(--cyan); } .m { color:var(--muted); }
+  table { width:100%; border-collapse:collapse; font-size:.95rem; }
+  th, td { text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--muted); font-weight:600; }
+  details { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 18px; margin-bottom:10px; }
+  summary { cursor:pointer; font-weight:600; }
+  details p { color:var(--muted); margin:10px 0 0; }
+  footer { padding:36px 0 60px; color:var(--muted); text-align:center; font-size:.9rem; border-top:1px solid var(--line); }
+</style>
+</head>
+<body>
+<header class="wrap">
+  <span class="badge">Free · open source · zero dependencies</span>
+  <h1>Is that Claude Code skill <span>safe?</span></h1>
+  <p class="lead">Claude Skill Guard checks Claude Code skills and plugins for malware before they run: prompt injection, hidden instructions, API-key theft, data exfiltration and malicious hooks. Dangerous skills are blocked, and every finding is explained in plain language.</p>
+  <div class="cta">
+    <a class="btn primary" href="https://github.com/tauseefahmad/claude-skill-guard">Get it on GitHub</a>
+    <a class="btn ghost" href="#install">Install in 2 minutes</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <section aria-labelledby="why">
+    <h2 id="why">Why skills need a security check</h2>
+    <p>A skill is instructions the AI agent follows plus scripts that run with <strong>your</strong> permissions. That makes it an easy place to hide a prompt injection, a key stealer or a backdoor inside something that looks like a "PDF helper". Claude Skill Guard reads every file before anything can run.</p>
+    <div class="grid">
+      <div class="card"><h3>1 · Before install</h3><p>Copies, clones and writes into your skills folder are scanned first. Dangerous or suspicious skills are blocked with the reason.</p></div>
+      <div class="card"><h3>2 · Safety net</h3><p>Anything that slips past (scripts, wildcards) is re-checked and moved to quarantine. Nothing is deleted.</p></div>
+      <div class="card"><h3>3 · Every session</h3><p>Skills added by hand or through the plugin menu are flagged at session start, before you use them.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="catches">
+    <h2 id="catches">What it catches</h2>
+    <div class="grid">
+      <div class="card"><h3>🕵️ Hidden instructions</h3><p>Invisible Unicode tag characters (decoded and shown), zero-width text, HTML comments hidden on GitHub.</p></div>
+      <div class="card"><h3>💉 Prompt injection</h3><p>"Ignore previous instructions", "don't tell the user", fake system messages, role hijacks.</p></div>
+      <div class="card"><h3>🔑 Credential theft</h3><p>SSH keys, cloud credentials, .npmrc, .env files, browser data, full environment dumps.</p></div>
+      <div class="card"><h3>📤 Data exfiltration</h3><p>Webhook catchers, tunnels, chat webhooks, pastebins, raw IP addresses, uploads.</p></div>
+      <div class="card"><h3>💣 Remote code &amp; persistence</h3><p>Download-and-run, eval, unpinned installs, startup entries, settings and memory writes.</p></div>
+      <div class="card"><h3>⚙️ Auto-run code</h3><p>Every plugin hook and MCP server is listed, because they run without you invoking them.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="looks">
+    <h2 id="looks">What a review looks like</h2>
+<pre><span class="g">━━ ✔ CLEAN (10) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+  <span class="g">✔</span> sec-filings         <span class="m">3 files · network: data.sec.gov ×4, www.sec.gov ×3</span>
+  <span class="g">✔</span> date-formatter      <span class="m">2 files · no network</span>
+
+<span class="c">━━ ◆ REVIEW ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+  <strong>plugin "log-compressor"</strong> <span class="m">· 44 files</span>
+  Nothing known-bad, but parts run on their own or need a human look.
+
+  <strong>Findings</strong>   <span class="m">● 0 critical   ● 0 high</span>   <span class="y">● 6 medium</span>   <span class="m">● 8 low</span>
+
+  <span class="y">MEDIUM</span>   <strong>auto-hook</strong> <span class="m">×5</span>
+           Runs automatically on agent events without you invoking the skill.
+           <span class="c">▸</span> hooks/hooks.json:7    <span class="m">node "${CLAUDE_PLUGIN_ROOT}/bin/cli.mjs" hook session</span>
+
+  <strong>Network</strong>    github.com ×22 · img.shields.io ×2  <span class="m">(30 URLs)</span>
+
+<strong>━━ Summary ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</strong>
+  <span class="m">✖ 0 DANGEROUS     ⚠ 0 SUSPICIOUS</span>     <span class="c">◆ 2 REVIEW</span>     <span class="g">✔ 11 CLEAN</span></pre>
+    <p>Ask for a full audit and the agent reads every file and answers with 🟢 <strong>SAFE</strong>, 🟡 <strong>CAUTION</strong> or 🔴 <strong>DO NOT INSTALL</strong>, an at-a-glance checklist and a findings table.</p>
+  </section>
+
+  <section aria-labelledby="install">
+    <h2 id="install">Install</h2>
+    <p>Needs Node.js 18 or newer. Nothing else.</p>
+<pre>git clone https://github.com/tauseefahmad/claude-skill-guard.git
+cp -r claude-skill-guard/skill-guard ~/.claude/skills/</pre>
+    <p>Then add the three hooks to <code>~/.claude/settings.json</code> as shown in the <a href="https://github.com/tauseefahmad/claude-skill-guard#install">README</a>, and ask: <em>"Audit my skills."</em></p>
+  </section>
+
+  <section aria-labelledby="compare">
+    <h2 id="compare">Built to be trusted</h2>
+    <table>
+      <thead><tr><th>Property</th><th>How</th></tr></thead>
+      <tbody>
+        <tr><td>Read-only</td><td>Never runs, imports or installs what it scans, and a test proves it.</td></tr>
+        <tr><td>Tamper-evident approvals</td><td>Approvals are pinned to a SHA-256 of the skill's content; any update is checked again.</td></tr>
+        <tr><td>No supply chain</td><td>Zero dependencies: three files of plain Node.js you can read in an afternoon.</td></tr>
+        <tr><td>Cross-platform</td><td>Tested on Windows and Linux with Node 18, 22 and 24.</td></tr>
+        <tr><td>Honest limits</td><td>Static review, not a sandbox. CLEAN means "nothing found", not "proven safe".</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section aria-labelledby="faq">
+    <h2 id="faq">FAQ</h2>
+    <details><summary>Are Claude Code skills safe?</summary><p>Most are, but a skill runs with your permissions and its instructions are followed by the agent, so a malicious one can read your files and keys, send them anywhere or change your settings. Check a skill before installing it, like any other code.</p></details>
+    <details><summary>How do I check a Claude skill for malware?</summary><p>Install Claude Skill Guard and ask "Is this skill safe?" with the link before installing. It clones the skill into a scratch folder with git hooks disabled, scans it and reviews every file. You can also run <code>scan.mjs</code> on any skill folder.</p></details>
+    <details><summary>Does it work with Claude Code plugins and MCP servers?</summary><p>Yes. Plugins are scanned like skills, and every hook command and MCP server they declare is listed, because those run without you invoking anything.</p></details>
+    <details><summary>Does the scanner send my code anywhere?</summary><p>No. It is local and read-only, makes no network requests and has no dependencies.</p></details>
+  </section>
+</main>
+
+<footer class="wrap">
+  <p>Claude Skill Guard · MIT licence · by <a href="https://tauseefahmad.github.io/">Tauseef Ahmad Awan</a> · <a href="https://github.com/tauseefahmad/claude-skill-guard">Source on GitHub</a></p>
+  <p>An independent open-source project, not affiliated with or endorsed by Anthropic.</p>
+</footer>
+</body>
+</html>

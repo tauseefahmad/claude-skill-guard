@@ -1,0 +1,16 @@
+{
+  "name": "claude-skill-guard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Security scanner for Claude Code skills and plugins: blocks prompt injection, credential theft, data exfiltration and malicious hooks before install",
+  "license": "MIT",
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "test": "node --test test/scan.test.mjs",
+    "scan": "node skill-guard/scan.mjs"
+  },
+  "repository": { "type": "git", "url": "git+https://github.com/tauseefahmad/claude-skill-guard.git" },
+  "homepage": "https://tauseefahmad.github.io/claude-skill-guard/",
+  "keywords": ["claude-code", "claude-skills", "claude-code-plugins", "security", "security-scanner", "prompt-injection", "supply-chain-security", "ai-security", "agent-skills", "static-analysis"]
+}

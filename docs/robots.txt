@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://tauseefahmad.github.io/claude-skill-guard/sitemap.xml
