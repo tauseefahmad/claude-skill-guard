@@ -127,13 +127,35 @@ describe('approvals', () => {
   });
 });
 
-describe('human-readable report', () => {
+describe('compact report (default when output is not a terminal, e.g. read by a model)', () => {
+  it('puts each rule on one line with its locations grouped by file, in plain ASCII', () => {
+    const dir = make('compact', {
+      'SKILL.md': skill('Uploader.'),
+      'a.py': 'import requests\nrequests.post("https://api.example.com/a")\nrequests.post("https://api.example.com/b")\n',
+    });
+    const { out } = scan(dir);
+    assert.match(out, /^REVIEW skill compact \(2 files\)/m);
+    assert.match(out, /^ medium exfil-upload x2: a\.py:2,3 `/m);
+    assert.match(out, /^ net \(2 URLs\): api\.example\.com x2$/m);
+    assert.match(out, /^Summary: 0 DANGEROUS, 0 SUSPICIOUS, 1 REVIEW, 0 CLEAN/m);
+    assert.equal(/━|●|▸/.test(out), false, 'no decoration in compact mode');
+  });
+
+  it('lists clean skills on a single line', () => {
+    make('folder/one', { 'SKILL.md': skill('One.') });
+    make('folder/two', { 'SKILL.md': skill('Two.') });
+    const { out } = scan(path.join(root, 'folder'));
+    assert.match(out, /^CLEAN \(2\): one, two$/m);
+  });
+});
+
+describe('human-readable report (--pretty, or a real terminal)', () => {
   it('groups repeated findings and summarises network hosts', () => {
     const dir = make('report', {
       'SKILL.md': skill('Uploader.'),
       'a.py': `import requests\nrequests.post("https://api.example.com/a")\nrequests.post("https://api.example.com/b")\n`,
     });
-    const { out } = scan(dir);
+    const { out } = scan(dir, '--pretty');
     assert.match(out, /exfil-upload ×2/);
     assert.match(out, /api\.example\.com ×2/);
     assert.match(out, /Summary/);
@@ -141,7 +163,7 @@ describe('human-readable report', () => {
 
   it('prints only ASCII with --ascii', () => {
     const dir = make('ascii', { 'SKILL.md': skill('Uploader.'), 'a.py': 'import requests\nrequests.post("https://api.example.com")\n' });
-    const { out } = scan(dir, '--ascii');
+    const { out } = scan(dir, '--pretty', '--ascii');
     assert.match(out, /\[\?\] REVIEW/);
     assert.equal(/[^\x09\x0a\x0d\x20-\x7e]/.test(out), false, 'non-ASCII character in --ascii output');
   });

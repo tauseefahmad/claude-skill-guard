@@ -37,6 +37,9 @@ like a "PDF helper". skill-guard reads them before they can do anything.
 - **Read-only scanner.** It never runs, imports or installs anything it scans (there is a test for that).
 - **Tamper-evident approvals.** An approved skill is pinned to a SHA-256 of its content; any later change
   is checked again, so a skill cannot start clean and turn malicious in an update.
+- **Token-efficient.** About 80 tokens of always-loaded description; when the agent reads scan results it gets
+  a compact one-line-per-rule report (around 70% fewer tokens than the terminal layout), and nothing at all
+  when there is nothing to act on.
 - **Works on Windows, macOS and Linux**, tested in CI on Node 18, 22 and 24.
 
 ---
@@ -63,7 +66,9 @@ It also lists **every outbound host** a skill contains, so you can see who it ta
 
 ## What a review looks like
 
-In a terminal (colour in real terminals, `--ascii` for old consoles):
+In a terminal (colour in real terminals, `--ascii` for old consoles). When the output is piped or read by the
+agent it switches to a compact form with the same facts in a fraction of the tokens; `--pretty` forces the
+layout below:
 
 ```
 ━━ ✔ CLEAN (10) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

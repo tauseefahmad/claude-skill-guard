@@ -155,6 +155,7 @@ cp -r claude-skill-guard/skill-guard ~/.claude/skills/</pre>
         <tr><td>Read-only</td><td>Never runs, imports or installs what it scans, and a test proves it.</td></tr>
         <tr><td>Tamper-evident approvals</td><td>Approvals are pinned to a SHA-256 of the skill's content; any update is checked again.</td></tr>
         <tr><td>No supply chain</td><td>Zero dependencies: three files of plain Node.js you can read in an afternoon.</td></tr>
+        <tr><td>Token-efficient</td><td>About 80 tokens of always-loaded description, compact output when the agent reads it, silence when nothing needs attention.</td></tr>
         <tr><td>Cross-platform</td><td>Tested on Windows and Linux with Node 18, 22 and 24.</td></tr>
         <tr><td>Honest limits</td><td>Static review, not a sandbox. CLEAN means "nothing found", not "proven safe".</td></tr>
       </tbody>

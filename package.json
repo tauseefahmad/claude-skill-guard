@@ -1,6 +1,6 @@
 {
   "name": "claude-skill-guard",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Security scanner for Claude Code skills and plugins: blocks prompt injection, credential theft, data exfiltration and malicious hooks before install",
   "license": "MIT",

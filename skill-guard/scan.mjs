@@ -414,6 +414,44 @@ function printUnit(r, { brief }) {
   }
 }
 
+/**
+ * Compact report for a model or a pipe (stdout is not a terminal): the same facts in a fraction of the tokens.
+ * One line per rule with all its locations, a snippet only for medium and worse, hosts summarised, clean units
+ * on one line. Box drawing and blank lines cost tokens and tell a model nothing.
+ */
+function printCompact(results, { brief }) {
+  if (!results.length) return console.log('No new or changed skills since the last review.');
+  const quiet = results.filter((r) => r.verdict === 'CLEAN' && !r.findings.some((f) => f.sev !== 'info'));
+  const order = { DANGEROUS: 0, SUSPICIOUS: 1, REVIEW: 2, CLEAN: 3 };
+  for (const r of results.filter((x) => !quiet.includes(x)).sort((a, b) => order[a.verdict] - order[b.verdict])) {
+    console.log(`${r.verdict} ${r.kind} ${displayName(r)} (${r.files} files${r.status ? `, ${r.status}` : ''}) ${r.dir}`);
+    const groups = new Map();
+    for (const f of r.findings.filter((x) => x.sev !== 'info' || !brief)) {
+      const k = `${f.sev}|${f.id}`;
+      if (!groups.has(k)) groups.set(k, { sev: f.sev, id: f.id, why: f.why, hits: [] });
+      groups.get(k).hits.push(f);
+    }
+    for (const g of groups.values()) {
+      // "hooks/hooks.json:7,13,19; lib/run.mjs:35": each path once, its line numbers after it.
+      const byFile = new Map();
+      for (const f of g.hits) {
+        const file = f.file.replace(/\\/g, '/');
+        if (!byFile.has(file)) byFile.set(file, []);
+        if (f.line) byFile.get(file).push(f.line);
+      }
+      const where = [...byFile].map(([file, lines]) => (lines.length ? `${file}:${lines.join(',')}` : file)).join('; ');
+      const first = g.hits[0];
+      const snippet =
+        SEV_RANK[g.sev] >= 2 && first.text ? ` \`${fit(first.text.replace(/\\"/g, '"').replace(/\s+/g, ' '), 90)}\`` : '';
+      console.log(` ${g.sev} ${g.id}${g.hits.length > 1 ? ` x${g.hits.length}` : ''}: ${where}${snippet}${g.why ? ` - ${g.why}` : ''}`);
+    }
+    if (r.urls.length) console.log(` net (${r.urls.length} URLs): ${fit(hostSummary(r.urls).join(', ').replace(/ ×/g, ' x'), 160)}`);
+  }
+  if (quiet.length) console.log(`CLEAN (${quiet.length}): ${quiet.map((r) => r.name).join(', ')}`);
+  const counts = results.reduce((c, r) => ((c[r.verdict] = (c[r.verdict] || 0) + 1), c), {});
+  console.log(`Summary: ${['DANGEROUS', 'SUSPICIOUS', 'REVIEW', 'CLEAN'].map((k) => `${counts[k] || 0} ${k}`).join(', ')}. Static triage only.`);
+}
+
 function printReport(results, opts) {
   if (!results.length) {
     console.log(`${style.green(glyph('✔', '[ok]'))} No new or changed skills since the last review.`);
@@ -486,8 +524,10 @@ if (flags.has('--json')) {
   console.log(JSON.stringify(results, null, 2));
 } else if (flags.has('--quiet') && !results.length) {
   // nothing new: print nothing (used by hooks)
-} else {
+} else if (process.stdout.isTTY || flags.has('--pretty')) {
   printReport(results, { brief: flags.has('--brief') });
+} else {
+  printCompact(results, { brief: flags.has('--brief') });
 }
 
 const worst = results.reduce((m, r) => Math.max(m, { CLEAN: 0, REVIEW: 0, SUSPICIOUS: 1, DANGEROUS: 2 }[r.verdict]), 0);
